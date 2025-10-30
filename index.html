@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AquaSentry — Presentation (Final)</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg1: #081229;
+    --bg2: #071633;
+    --glass: rgba(255,255,255,0.06);
+    --accent-from: #00d4ff;
+    --accent-to: #7a00ff;
+    --text: #eaf6ff;
+    --muted: #bcd7ea;
+  }
+  html,body{height:100%;margin:0;font-family:"Inter",system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    background: radial-gradient(1200px 600px at 10% 10%, #05203a 0%, rgba(5,32,58,0) 20%),
+                radial-gradient(900px 400px at 90% 90%, #0b1530 0%, rgba(11,21,48,0) 20%),
+                linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;padding:18px;
+  }
+
+  .deck{
+    width: 1200px;
+    height: 700px;
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 40px);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(3,8,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    overflow:hidden;
+    position:relative;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding: 36px;
+    box-sizing:border-box;
+    display:flex;flex-direction:column;
+  }
+
+  .header{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;
+  }
+  .brand-small{
+    font-weight:700;letter-spacing:1px;color:var(--muted);font-size:13px;
+  }
+  .progress{
+    display:flex;gap:8px;align-items:center;
+  }
+  .dot{width:10px;height:10px;border-radius:20px;background:rgba(255,255,255,0.06);}
+  .dot.active{background:linear-gradient(90deg,var(--accent-from),var(--accent-to));box-shadow:0 8px 20px rgba(0,0,0,0.5),0 0 24px rgba(122,0,255,0.12) inset;transform:scale(1.18);}
+
+  .slide-area{flex:1;display:flex;align-items:center;justify-content:center;position:relative;}
+  .slide{
+    width:100%;height:100%;border-radius:10px;padding:36px;box-sizing:border-box;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+    display:none;flex-direction:row;gap:28px;align-items:center;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.02);
+  }
+  .slide.active{display:flex;animation:fadeIn .45s ease both;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .left{
+    width:62%;height:100%;display:flex;flex-direction:column;justify-content:center;gap:16px;
+  }
+  .title{
+    font-size:48px;font-weight:800;line-height:1;color:var(--text);
+    background: -webkit-linear-gradient(90deg,var(--accent-from),var(--accent-to));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    text-shadow: 0 8px 30px rgba(17,20,40,0.55);
+  }
+  .tagline{
+    font-size:16px;color:var(--muted);font-weight:600;
+  }
+  .badge{
+    display:inline-block;padding:8px 12px;border-radius:999px;background:linear-gradient(90deg,#06213a,#0b2340);
+    border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-weight:600;font-size:13px;
+  }
+  .subtitle{
+    color:var(--muted);font-size:18px;margin-top:8px;
+  }
+  .desc{
+    color:#cfeefb;line-height:1.6;font-size:15px;margin-top:6px;
+    max-width:90%;
+  }
+
+  .right{
+    width:38%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .card{
+    width:100%;height:70%;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    display:flex;align-items:center;justify-content:center;flex-direction:column;padding:18px;box-sizing:border-box;border:1px solid rgba(255,255,255,0.02);
+  }
+  .placeholder{
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--muted);
+    gap:10px;padding:10px;text-align:center;
+  }
+  .placeholder svg{opacity:0.92;filter:drop-shadow(0 10px 30px rgba(0,0,0,0.5));}
+
+  .controls{display:flex;align-items:center;justify-content:space-between;margin-top:18px;gap:16px;}
+  .left-controls{display:flex;gap:10px;align-items:center;}
+  .btn{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.04);
+    color:var(--text);padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer;
+    display:inline-flex;gap:10px;align-items:center;font-size:15px;
+  }
+  .btn:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.5)}
+  .btn.primary{
+    background: linear-gradient(90deg,var(--accent-from),var(--accent-to));color:#031226;border:none;
+    box-shadow:0 12px 30px rgba(122,0,255,0.12);
+  }
+  .kbd{font-size:13px;color:var(--muted);background:rgba(0,0,0,0.18);padding:6px 8px;border-radius:6px;}
+
+  @media (max-width:900px){
+    .deck{padding:18px}
+    .title{font-size:36px}
+    .left{width:100%}
+    .right{display:none}
+    .slide{padding:18px}
+  }
+
+  .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px;}
+  .feature{padding:12px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)}
+  .small{font-size:13px;color:var(--muted)}
+  .big-num{font-weight:800;font-size:32px;color:linear-gradient(90deg,#00f,#f0f)}
+
+  .modal{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,20,0.6);
+  }
+  .modal .inner{background:#061224;padding:20px;border-radius:12px;max-width:860px;width:90%;color:var(--text)}
+  .modal.show{display:flex}
+
+  .img-fit{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck" role="application" aria-label="AquaSentry presentation">
+  <div class="header">
+    <div class="brand-small">Our innovative project</div>
+    <div class="progress" aria-hidden="true" id="dots"></div>
+  </div>
+
+  <div class="slide-area" id="slideArea">
+    <!-- Slide 1: Intro -->
+    <section class="slide active" data-slide="1">
+      <div class="left">
+        <div class="badge">Viksit Bharat Abhiyan — Buildathon</div>
+        <div class="title">AquaSentry</div>
+        <div class="subtitle">Smart, low-cost, local water quality sentinel</div>
+        <div class="desc">
+          A self-powered device that measures water quality at handpumps and taps, shows a clear verdict for everyday users,
+          and stores precise readings for technicians. Designed for rural deployment with minimal maintenance.
+        </div>
+      </div>
+      <div class="right">
+        <div class="card">
+          <div class="placeholder">
+            <svg width="160" height="120" viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect rx="14" width="160" height="120" fill="url(#g)"/>
+              <defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#7a00ff"/></linearGradient></defs>
+            </svg>
+            <div style="font-weight:700;font-size:15px;color:var(--muted)">AquaSentry — Demo placeholder</div>
+            <div class="small">Replace this with product image or short promo video</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 2: Problem - handpump image -->
+    <section class="slide" data-slide="2">
+      <div class="left">
+        <div class="badge">Problem — Overview</div>
+        <div class="title" style="font-size:40px">Unseen contamination at source</div>
+        <div class="desc">Millions rely on untested handpumps and taps. Contaminated water causes disease, costs, and lost productivity.</div>
+        <div class="feature-grid" style="margin-top:18px">
+          <div class="feature"><strong>Waterborne Diseases</strong><div class="small">Cholera, Typhoid, Diarrhea</div></div>
+          <div class="feature"><strong>Hidden Toxins</strong><div class="small">Fluoride, Arsenic, Heavy metals</div></div>
+          <div class="feature"><strong>Low testing</strong><div class="small">Expensive labs, rare checks</div></div>
+          <div class="feature"><strong>High impact</strong><div class="small">Children and farmers most affected</div></div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card">
+          <!-- Realistic handpump image (public) -->
+          <img class="img-fit" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Hand_water_pump_in_India_%283382861084%29.jpg/1024px-Hand_water_pump_in_India_%283382861084%29.jpg" alt="Handpump">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Problem - polluted water image -->
+    <section class="slide" data-slide="3">
+      <div class="left">
+        <div class="badge">Problem — Root Causes</div>
+        <div class="title" style="font-size:38px">Why monitoring is missing</div>
+        <div class="desc">High equipment cost, lack of power, no local expertise, and sensor maintenance gaps create blind spots. AquaSentry targets these weaknesses with affordability, battery autonomy, and simple UI.</div>
+      </div>
+      <div class="right">
+        <div class="card">
+          <!-- Polluted water image -->
+          <img class="img-fit" src="https://images.picxy.com/cache/2020/5/22/77dc1adc19df4345e8a6de03482494e4.jpg" alt="Polluted water">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Solution overview -->
+    <section class="slide" data-slide="4">
+      <div class="left">
+        <div class="badge">Solution — Overview</div>
+        <div class="title" style="font-size:40px">AquaSentry — Tap/Handpump Guardian</div>
+        <div class="desc">Solar/battery-powered sensor node with simple color-coded verdicts and local data logging for maintenance teams.</div>
+        <ul style="margin-top:12px;color:var(--muted);line-height:1.7">
+          <li><strong>Local verdict:</strong> Drinkable / Washing only / Unsafe</li>
+          <li><strong>Compact:</strong> Low-cost build (~₹3.5k)</li>
+          <li><strong>Logs:</strong> Hourly entries on microSD, quick Prev/Next and Prev-Day buttons</li>
+        </ul>
+      </div>
+      <div class="right">
+        <div class="card">
+          <div class="placeholder"><div class="small">Design: verdict + icon (futuristic UI)</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Hardware image inserted -->
+    <section class="slide" data-slide="5">
+      <div class="left">
+        <div class="badge">How it works — Hardware</div>
+        <div class="title" style="font-size:36px">Sensors, Power, Enclosure</div>
+        <div class="desc">TDS (or pH) probe in flow, Arduino Nano/ESP32, 18650 battery with TP4056 charging, MT3608 boost, small OLED, and microSD logger. Optional mini solar panel and DS3231 RTC for hourly logs.</div>
+      </div>
+      <div class="right">
+        <div class="card">
+          <!-- Hardware image from web -->
+          <img class="img-fit" src="https://quartzcomponents.com/cdn/shop/files/pHSensorModule_3_1200x1200.jpg?v=1758996606" alt="Hardware components">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6: Logic & Logging image inserted -->
+    <section class="slide" data-slide="6">
+      <div class="left">
+        <div class="badge">How it works — Software</div>
+        <div class="title" style="font-size:36px">Logic & Display</div>
+        <div class="desc">Sensors → average readings → verdict thresholds → display (icon + one-line text) → log CSV to microSD. Buttons: Prev / Next / Prev-Day / Live.</div>
+      </div>
+      <div class="right">
+        <div class="card">
+          <!-- Flowchart image (web) -->
+          <img class="img-fit" src="https://www.researchgate.net/publication/353677681/figure/fig5/AS%3A1052920212631560%401628047149411/Water-quality-control-flowchart.png" alt="Logic flowchart">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7: Impact & Viksit Bharat logo -->
+    <section class="slide" data-slide="7">
+      <div class="left">
+        <div class="badge">Impact & Roadmap</div>
+        <div class="title" style="font-size:36px">Deploy, Test, Scale</div>
+        <div class="desc">Pilot in 2 villages, refine thresholds and casing, build training for local maintenance, then scale via local artisans under Atmanirbhar Bharat.</div>
+        <div style="margin-top:12px;color:var(--muted)" class="small">Next steps: prototype demo, user testing, grant/seed funding, community workshops.</div>
+      </div>
+      <div class="right">
+        <div class="card">
+          <!-- Viksit Bharat Abhiyan logo -->
+          <img class="img-fit" src="https://developedindiamission.org/wp-content/themes/dim/app/images/logo-hi.png" alt="Viksit Bharat Abhiyan logo">
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="controls">
+    <div class="left-controls">
+      <button class="btn" id="prevBtn" title="Previous (←)">◀ Prev</button>
+      <button class="btn primary" id="nextBtn" title="Next (→)">Next ▶</button>
+      <div class="kbd">Use ← → arrows</div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div style="color:var(--muted);font-size:13px">Slide <span id="current">1</span> / <span id="total">7</span></div>
+      <button class="btn" id="helpBtn">Notes / Replace media</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for notes -->
+<div class="modal" id="modal">
+  <div class="inner">
+    <h3 style="margin:0 0 8px 0">Presenter notes & media replace tips</h3>
+    <p style="color:var(--muted)">Replace images: open this HTML in an editor and change the <code>src</code> of &lt;img&gt; tags. For local use, download images and reference local file names.</p>
+    <ol style="color:var(--muted)">
+      <li>Keep images under ~1.5MB for smooth display.</li>
+      <li>Prefer MP4 for video; host the file locally in the same folder.</li>
+      <li>To update the Viksit logo, replace the last slide image source.</li>
+    </ol>
+    <div style="text-align:right;margin-top:12px"><button class="btn" id="closeModal">Close</button></div>
+  </div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let index = 0;
+  const currentEl = document.getElementById('current');
+  const totalEl = document.getElementById('total');
+  totalEl.textContent = total;
+
+  const dotsWrap = document.getElementById('dots');
+  slides.forEach((s,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0? ' active':'');
+    d.dataset.i = i;
+    d.title = 'Slide ' + (i+1);
+    dotsWrap.appendChild(d);
+    d.addEventListener('click', ()=>go(i));
+  });
+
+  function updateUI(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===index));
+    currentEl.textContent = index+1;
+    document.querySelectorAll('.dot').forEach((d,i)=> d.classList.toggle('active', i===index));
+  }
+
+  function go(i){
+    index = Math.max(0, Math.min(total-1, i));
+    updateUI();
+  }
+  document.getElementById('nextBtn').addEventListener('click', ()=> go(index+1));
+  document.getElementById('prevBtn').addEventListener('click', ()=> go(index-1));
+
+  window.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowRight') go(index+1);
+    if(e.key === 'ArrowLeft') go(index-1);
+    if(e.key === 'Home') go(0);
+    if(e.key === 'End') go(total-1);
+  });
+
+  const modal = document.getElementById('modal');
+  document.getElementById('helpBtn').addEventListener('click', ()=> modal.classList.add('show'));
+  document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.remove('show'));
+  modal.addEventListener('click', (e)=> { if(e.target===modal) modal.classList.remove('show') });
+
+  // prevent accidental overscroll when presenting on touch screens
+  document.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
+</script>
+</body>
+</html>
