@@ -35,22 +35,43 @@
     -webkit-text-fill-color: transparent;
   }
 
-  /* --- CORE DECK CONTAINER (The Infographic Screen) --- */
+  /* --- CORE DECK CONTAINER (The Infographic Screen Viewport) --- */
   .deck{
-    width: 1400px;
-    height: 800px;
-    max-width: calc(100vw - 40px);
-    max-height: calc(100vh - 40px);
+    /* 1. Dynamic Scaling and Aspect Ratio */
+    aspect-ratio: 14 / 8; 
+    width: min(
+        calc(100vw - 40px), 
+        calc((100vh - 40px) * 14 / 8), 
+        1400px /* The absolute maximum nominal width */
+    );
+    height: auto; 
+    max-height: 800px; 
+    
+    /* 2. Style for the container */
     border-radius: 12px;
     background: var(--bg-panel);
     border: 1px solid var(--accent-gold-dark);
     box-shadow: 0 10px 40px var(--shadow-color), inset 0 0 50px rgba(184, 134, 11, 0.05);
-    overflow:hidden;
+    overflow:hidden; /* CRITICAL: Clips the unscaled footprint of the inner content */
     position:relative;
-    padding: 30px;
+    padding: 0; 
     box-sizing:border-box;
-    display:flex;flex-direction:column;
   }
+  
+  /* --- SCALING ROOT (The actual design canvas at 1400x800) --- */
+  #scaling-root {
+    /* Define the nominal design size, which the content expects */
+    width: 1400px;
+    height: 800px;
+    transform-origin: top left; /* Ensures scaling starts from the correct corner */
+    
+    /* Layout for all content inside the root */
+    padding: 30px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+
 
   /* --- HEADER & PROGRESS --- */
   .header{
@@ -96,12 +117,17 @@
     line-height: 1.0;
   }
 
-  /* --- CONTENT BLOCKS --- */
+  /* --- CONTENT BLOCKS (FIXED ALIGNMENT) --- */
   .left{
-    width:60%;height:100%;display:flex;flex-direction:column;justify-content:center;gap:20px;
+    width:60%;height:100%;display:flex;flex-direction:column;
+    justify-content:flex-start; /* Aligns text content to the top */
+    gap:20px;
+    padding-top: 15px; /* Adds consistent top spacing for text */
   }
   .right{
-    width:40%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    width:40%;height:100%;display:flex;flex-direction:column;align-items:center;
+    justify-content:center; /* Vertically centers the content (card/image) in the right column */
+    padding-top: 0; 
   }
   
   .title{
@@ -125,19 +151,38 @@
   }
   .desc{
     color:var(--text-primary); 
-    line-height:1.7;font-size:17px;margin-top:10px;
+    line-height:1.7;
+    font-size:19px; /* Global standard size for description text */
+    margin-top:10px;
     max-width:95%;
   }
   
   /* --- VISUAL PANEL (RIGHT) - The luxury frame --- */
   .card{
-    width:100%;height:85%;border-radius:8px;
+    width:100%;
+    height:85%; /* Default height for all cards */
+    border-radius:8px;
     background: rgba(255, 255, 255, 0.03); /* Translucent White */
     padding:18px;box-sizing:border-box;
     border: 1px solid rgba(255, 215, 0, 0.2);
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px); /* Soft glass effect */
   }
+
+  /* CRITICAL FIX: Specific, smaller height for Slide 3 only to reveal controls */
+  .slide[data-slide="3"] .card {
+      height: 55%; /* Keeps image small and centered, guaranteeing controls visibility */
+  }
+  /* List style for Slide 3's left content */
+  .slide[data-slide="3"] .left ul {
+    margin-top:20px;
+    color:var(--text-primary);
+    line-height:1.7;
+    font-size:17px;
+    list-style-type: '— ';
+    padding-left: 15px;
+  }
+  
   .img-fit{
     width:100%;height:100%;object-fit:cover;border-radius:5px;display:block;
     filter: sepia(0.05) brightness(1.05); /* Subtle tone enhancement */
@@ -186,267 +231,225 @@
     background:rgba(192, 160, 104, 0.1);
     padding:8px 10px;border-radius:5px;
   }
-  
-  /* --- MOBILE ADAPTATION (Critical for responsiveness) --- */
-  @media (max-width: 900px) {
-    .deck {
-        padding: 16px;
-        height: auto;
-    }
-    .slide {
-        padding: 16px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-        height: auto;
-    }
-    .left {
-        width: 100%;
-        height: auto;
-    }
-    .right {
-        /* Hide the image panel on smaller screens to prioritize text content */
-        display: none;
-    }
-    .title {
-        font-size: 36px;
-    }
-    .slide[data-slide="1"] .title {
-      font-size: 50px; 
-    }
-    .tagline, .subtitle {
-        font-size: 16px;
-    }
-    .desc {
-        font-size: 15px;
-    }
-    .feature-grid {
-        grid-template-columns: repeat(1, 1fr);
-        gap: 15px;
-    }
-    .controls {
-        flex-direction: column;
-        align-items: stretch;
-        margin-top: 15px;
-        gap: 10px;
-    }
-    .left-controls {
-        width: 100%;
-        order: 1;
-        gap: 10px;
-    }
-    .btn {
-        flex: 1;
-        padding: 14px 10px;
-        font-size: 14px;
-        justify-content: center;
-    }
-    .kbd {
-        display: none;
-    }
-    .header {
-        margin-bottom: 15px;
-    }
-  }
 
 </style>
 </head>
 <body>
 
 <div class="deck" id="deck" role="application" aria-label="AquaSentry presentation">
-  <div class="header">
-    <div class="brand-small gold-text">AQUASENTRY // EXECUTIVE REPORT</div>
-    <div class="progress" aria-hidden="true" id="dots"></div>
-  </div>
-
-  <div class="slide-area" id="slideArea">
-    <!-- Slide 1: Grand Title (Playfair Display) -->
-    <section class="slide active" data-slide="1">
-      <div class="left">
-        <div class="tagline">Viksit Bharat Abhiyan - Buildathon Initiative</div>
-        <div class="title gold-text">AquaSentry</div>
-        <div class="subtitle">Smart, low-cost, local water quality sentinel: A critical infrastructure solution.</div>
-        <div class="desc" style="max-width: 75%; margin: 20px auto; font-size: 18px;">
-          A self-powered device that measures water quality at handpumps and taps, delivering a clear consumer verdict
-          and logging granular, precise data for institutional maintenance teams. Optimized for robust, rural deployment.
-        </div>
-      </div>
-      <div class="right"></div>
-    </section>
-
-    <!-- Slide 2: Problem - handpump image -->
-    <section class="slide" data-slide="2">
-      <div class="left">
-        <div class="badge">CHALLENGE: UNMONITORED INFRASTRUCTURE</div>
-        <div class="title" style="font-size:48px">Unseen contamination at source</div>
-        <div class="desc">Millions rely on untested handpumps and taps. Contaminated water causes disease, costs, and lost productivity.</div>
-        <div class="feature-grid">
-          <div class="feature">
-            <strong>HEALTH IMPERATIVE</strong>
-            <div class="small">Cholera, Typhoid, Diarrhea, and long-term illness.</div>
-          </div>
-          <div class="feature">
-            <strong>TOXIC RISK</strong>
-            <div class="small">Fluoride, Arsenic, Heavy metals exposure in groundwater.</div>
-          </div>
-          <div class="feature">
-            <strong>ECONOMIC DRAIN</strong>
-            <div class="small">Costs associated with reactive healthcare and productivity loss.</div>
-          </div>
-          <div class="feature">
-            <strong>TESTING GAP</strong>
-            <div class="small">Expensive laboratory analysis and inconsistent check-up schedules.</div>
-          </div>
-        </div>
-      </div>
-      <div class="right">
-        <div class="card">
-          <!-- Realistic handpump image (public) -->
-          <img class="img-fit" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Hand_water_pump_in_India_%283382861084%29.jpg/1024px-Hand_water_pump_in_India_%283382861084%29.jpg" alt="Handpump">
-        </div>
-      </div>
-    </section>
-
-    <!-- Slide 3: Problem - polluted water image -->
-    <section class="slide" data-slide="3">
-      <div class="left">
-        <div class="badge">STRATEGIC GAP ANALYSIS</div>
-        <div class="title" style="font-size:48px">Why monitoring is missing</div>
-        <div class="desc">High equipment cost, inconsistent power supply, lack of local expertise, and sensor maintenance gaps create systemic blind spots. AquaSentry closes these weaknesses.</div>
-        <ul style="margin-top:20px;color:var(--text-primary);line-height:2;font-size:17px;list-style-type: '— ';padding-left: 15px;">
-          <li>**Prohibitive Cost:** High investment required for lab-grade monitoring systems.</li>
-          <li>**Autonomy Requirement:** Systems must operate reliably without external power infrastructure.</li>
-          <li>**Maintenance Specialization:** Need for simplified maintenance by local personnel.</li>
-          <li>**Data Integrity:** Challenge in securing consistent and timely data for action.</li>
-        </ul>
-      </div>
-      <div class="right">
-        <div class="card">
-          <!-- Polluted water image -->
-          <img class="img-fit" src="https://images.picxy.com/cache/2020/5/22/77dc1adc19df4345e8a6de03482494e4.jpg" alt="Polluted water">
-        </div>
-      </div>
-    </section>
-
-    <!-- Slide 4: Solution overview -->
-    <section class="slide" data-slide="4">
-      <div class="left">
-        <div class="badge">THE AQUASENTRY PROPOSITION: CORE VALUE</div>
-        <div class="title" style="font-size:48px">The System Guardian</div>
-        <div class="desc">Solar/battery-powered sensor node with simple color-coded verdicts and local data logging for maintenance teams.</div>
-        <ul style="margin-top:20px;color:var(--accent-gold-light);line-height:2;font-size:17px;list-style-type: '★ ';padding-left: 15px;">
-          <li>**Local Transparency:** Immediate, clear verdict: Drinkable / Washing only / Unsafe.</li>
-          <li>**Economic Design:** Ultra-low-cost build (~₹3.5k) for scalable deployment.</li>
-          <li>**Auditable Logs:** Hourly data entries recorded on microSD with quick retrieval interface.</li>
-        </ul>
-      </div>
-      <div class="right">
-        <div class="card">
-          <!-- Image from user's original content -->
-          <img 
-            src="https://raw.githubusercontent.com/blastoise-creater/Aquasentry-innovative-project/refs/heads/main/IMG-20251101-WA0008.jpg" 
-            alt="Design: verdict + icon (futuristic UI)"
-            style="width: 100%; height: 100%; display: block; object-fit: cover;" 
-          />
-        </div>
-      </div>
-    </section>
-
-
-    <!-- Slide 5: Hardware image inserted -->
-    <section class="slide" data-slide="5">
-      <div class="left">
-        <div class="badge">TECHNOLOGY ARCHITECTURE</div>
-        <div class="title" style="font-size:48px">Hardware & Power Autonomy</div>
-        <div class="desc">A modular assembly of commercial off-the-shelf components ensures ease of repair and low procurement cost. Key metrics measured by dedicated probes.</div>
-        <ul style="margin-top:20px;color:var(--text-primary);line-height:2;font-size:17px;list-style-type: '— ';padding-left: 15px;">
-          <li>**Sensing Core:** TDS/pH probes housed in a flow-through enclosure.</li>
-          <li>**Processing Unit:** Arduino Nano/ESP32 for robust data processing.</li>
-          <li>**Power System:** 18650 battery, TP4056 charging module, MT3608 boost, with optional mini **Solar Panel** integration.</li>
-        </ul>
-      </div>
-      <div class="right">
-        <div class="card">
-          <!-- Hardware image from web -->
-          <img class="img-fit" src="https://quartzcomponents.com/cdn/shop/files/pHSensorModule_3_1200x1200.jpg?v=1758996606" alt="Hardware components">
-        </div>
-      </div>
-    </section>
-
-    <!-- Slide 6: Logic & Logging image inserted -->
-    <section class="slide" data-slide="6">
-      <div class="left">
-        <div class="badge">DATA FLOW & INTERPRETATION</div>
-        <div class="title" style="font-size:48px">Operational Logic</div>
-        <div class="desc">The embedded algorithm ensures immediate, reliable data translation, minimizing false positives and providing actionable intelligence.</div>
-        <div class="feature-grid">
-          <div class="feature">
-            <strong>01. DATA INTAKE</strong>
-            <div class="small">Raw analog sensor input (TDS/pH).</div>
-          </div>
-          <div class="feature">
-            <strong>02. CALCULATION</strong>
-            <div class="small">Averaging, temperature compensation, and threshold check.</div>
-          </div>
-          <div class="feature">
-            <strong>03. CONSUMER DISPLAY</strong>
-            <div class="small">OLED verdict (icon + text).</div>
-          </div>
-          <div class="feature">
-            <strong>04. INSTITUTIONAL RECORD</strong>
-            <div class="small">Time-stamped CSV log to microSD storage.</div>
-          </div>
-        </div>
-      </div>
-      <div class="right">
-        <div class="card">
-          <!-- Flowchart image (web) -->
-          <img class="img-fit" src="https://www.researchgate.net/publication/353677681/figure/fig5/AS%3A1052920212631560%401628047149411/Water-quality-control-flowchart.png" alt="Logic flowchart">
-        </div>
-      </div>
-    </section>
-
-    <!-- Slide 7: Impact & Viksit Bharat logo -->
-    <section class="slide" data-slide="7">
-      <div class="left">
-        <div class="badge">SCALABILITY & INVESTMENT RETURN</div>
-        <div class="title" style="font-size:48px">Impact & Roadmap</div>
-        <div class="desc">A phased approach: pilot testing for local calibration, establishing a training framework, and large-scale deployment leveraging local artisans under the Atmanirbhar Bharat initiative.</div>
-        <div style="margin-top:30px;color:var(--accent-gold-light);font-weight:700;font-size:20px;letter-spacing:1px;font-family:'Playfair Display',serif;">TARGET DEPLOYMENT: 500 UNITS IN YEAR 2</div>
-        <div style="margin-top:10px;color:var(--text-secondary);font-size:16px;">
-          Immediate Objectives: Prototype finalization, extensive community User Acceptance Testing (UAT), and securing seed funding for procurement and initial training workshops.
-        </div>
-      </div>
-      <div class="right">
-        <div class="card">
-          <!-- Viksit Bharat Abhiyan logo -->
-          <img class="img-fit" src="https://developedindiamission.org/wp-content/themes/dim/app/images/logo-hi.png" alt="Viksit Bharat Abhiyan logo">
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <div class="controls">
-    <div class="left-controls">
-      <button class="btn" id="prevBtn" title="Previous (←)">◀ PREV REPORT</button>
-      <button class="btn primary" id="nextBtn" title="Next (→)">NEXT SECTION ▶</button>
-      <div class="kbd">Use Arrow Keys</div>
+  
+  <div id="scaling-root">
+    
+    <div class="header">
+      <div class="brand-small gold-text">AQUASENTRY // EXECUTIVE REPORT</div>
+      <div class="progress" aria-hidden="true" id="dots"></div>
     </div>
-    <div style="display:flex;gap:12px;align-items:center">
-      <div style="color:var(--text-secondary);font-size:15px;">INFOGRAPHIC <span id="current" class="gold-text">1</span> / <span id="total">7</span></div>
+
+    <div class="slide-area" id="slideArea">
+      <!-- Slide 1: Grand Title (Playfair Display) -->
+      <section class="slide active" data-slide="1">
+        <div class="left">
+          <div class="tagline">Viksit Bharat Abhiyan - Buildathon Initiative</div>
+          <div class="title gold-text">AquaSentry</div>
+          <div class="subtitle">Smart, low-cost, local water quality sentinel: A critical infrastructure solution.</div>
+          <!-- Text size updated to 30px only for the first slide's description -->
+          <div class="desc" style="max-width: 75%; margin: 20px auto; line-height: 1.5; font-size: 30px;">
+            A self-powered device that measures water quality at handpumps and taps, delivering a clear consumer verdict
+            and logging granular, precise data for institutional maintenance teams. Optimized for robust, rural deployment.
+          </div>
+        </div>
+        <div class="right"></div>
+      </section>
+
+      <!-- Slide 2: Problem - handpump image -->
+      <section class="slide" data-slide="2">
+        <div class="left">
+          <div class="badge">CHALLENGE: UNMONITORED INFRASTRUCTURE</div>
+          <div class="title" style="font-size:48px">Unseen contamination at source</div>
+          <div class="desc">Millions rely on untested handpumps and taps. Contaminated water causes disease, costs, and lost productivity.</div>
+          <div class="feature-grid">
+            <div class="feature">
+              <strong>HEALTH IMPERATIVE</strong>
+              <div class="small">Cholera, Typhoid, Diarrhea, and long-term illness.</div>
+            </div>
+            <div class="feature">
+              <strong>TOXIC RISK</strong>
+              <div class="small">Fluoride, Arsenic, Heavy metals exposure in groundwater.</div>
+            </div>
+            <div class="feature">
+              <strong>ECONOMIC DRAIN</strong>
+              <div class="small">Costs associated with reactive healthcare and productivity loss.</div>
+            </div>
+            <div class="feature">
+              <strong>TESTING GAP</strong>
+              <div class="small">Expensive laboratory analysis and inconsistent check-up schedules.</div>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="card">
+            <img class="img-fit" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Hand_water_pump_in_India_%283382861084%29.jpg/1024px-Hand_water_pump_in_India_%283382861084%29.jpg" alt="Handpump">
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: Problem - polluted water image -->
+      <section class="slide" data-slide="3">
+        <div class="left">
+          <div class="badge">STRATEGIC GAP ANALYSIS</div>
+          <div class="title" style="font-size:48px">Why monitoring is missing</div>
+          <div class="desc">High equipment cost, inconsistent power supply, lack of local expertise, and sensor maintenance gaps create systemic blind spots. AquaSentry closes these weaknesses.</div>
+          <ul style="margin-top:20px;color:var(--text-primary);line-height:1.7;font-size:17px;list-style-type: '— ';padding-left: 15px;">
+            <li>**Prohibitive Cost:** High investment required for lab-grade monitoring systems.</li>
+            <li>**Autonomy Requirement:** Systems must operate reliably without external power infrastructure.</li>
+            <li>**Maintenance Specialization:** Need for simplified maintenance by local personnel.</li>
+            <li>**Data Integrity:** Challenge in securing consistent and timely data for action.</li>
+          </ul>
+        </div>
+        <div class="right">
+          <div class="card">
+            <img class="img-fit" src="https://images.picxy.com/cache/2020/5/22/77dc1adc19df4345e8a6de03482494e4.jpg" alt="Polluted water">
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: Solution overview -->
+      <section class="slide" data-slide="4">
+        <div class="left">
+          <div class="badge">THE AQUASENTRY PROPOSITION: CORE VALUE</div>
+          <div class="title" style="font-size:48px">The System Guardian</div>
+          <div class="desc">Solar/battery-powered sensor node with simple color-coded verdicts and local data logging for maintenance teams.</div>
+          <ul style="margin-top:20px;color:var(--accent-gold-light);line-height:2;font-size:19px;list-style-type: '★ ';padding-left: 15px;">
+            <li>**Local Transparency:** Immediate, clear verdict: Drinkable / Washing only / Unsafe.</li>
+            <li>**Economic Design:** Ultra-low-cost build (~₹3.5k) for scalable deployment.</li>
+            <li>**Auditable Logs:** Hourly data entries recorded on microSD with quick retrieval interface.</li>
+          </ul>
+        </div>
+        <div class="right">
+          <div class="card">
+            <img 
+              src="https://raw.githubusercontent.com/blastoise-creater/Aquasentry-innovative-project/refs/heads/main/IMG-20251101-WA0008.jpg" 
+              alt="Design: verdict + icon (futuristic UI)"
+              style="width: 100%; height: 100%; display: block; object-fit: cover;" 
+            />
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Slide 5: Hardware image inserted -->
+      <section class="slide" data-slide="5">
+        <div class="left">
+          <div class="badge">TECHNOLOGY ARCHITECTURE</div>
+          <div class="title" style="font-size:48px">Hardware & Power Autonomy</div>
+          <div class="desc">A modular assembly of commercial off-the-shelf components ensures ease of repair and low procurement cost. Key metrics measured by dedicated probes.</div>
+          <ul style="margin-top:20px;color:var(--text-primary);line-height:2;font-size:19px;list-style-type: '— ';padding-left: 15px;">
+            <li>**Sensing Core:** TDS/pH probes housed in a flow-through enclosure.</li>
+            <li>**Processing Unit:** Arduino Nano/ESP32 for robust data processing.</li>
+            <li>**Power System:** 18650 battery, TP4056 charging module, MT3608 boost, with optional mini **Solar Panel** integration.</li>
+          </ul>
+        </div>
+        <div class="right">
+          <div class="card">
+            <img class="img-fit" src="https://quartzcomponents.com/cdn/shop/files/pHSensorModule_3_1200x1200.jpg?v=1758996606" alt="Hardware components">
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 6: Logic & Logging image inserted -->
+      <section class="slide" data-slide="6">
+        <div class="left">
+          <div class="badge">DATA FLOW & INTERPRETATION</div>
+          <div class="title" style="font-size:48px">Operational Logic</div>
+          <div class="desc">The embedded algorithm ensures immediate, reliable data translation, minimizing false positives and providing actionable intelligence.</div>
+          <div class="feature-grid">
+            <div class="feature">
+              <strong>01. DATA INTAKE</strong>
+              <div class="small">Raw analog sensor input (TDS/pH).</div>
+            </div>
+            <div class="feature">
+              <strong>02. CALCULATION</strong>
+              <div class="small">Averaging, temperature compensation, and threshold check.</div>
+            </div>
+            <div class="feature">
+              <strong>03. CONSUMER DISPLAY</strong>
+              <div class="small">OLED verdict (icon + text).</div>
+            </div>
+            <div class="feature">
+              <strong>04. INSTITUTIONAL RECORD</strong>
+              <div class="small">Time-stamped CSV log to microSD storage.</div>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="card">
+            <img class="img-fit" src="https://www.researchgate.net/publication/353677681/figure/fig5/AS%3A1052920212631560%401628047149411/Water-quality-control-flowchart.png" alt="Logic flowchart">
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 7: Impact & Viksit Bharat logo -->
+      <section class="slide" data-slide="7">
+        <div class="left">
+          <div class="badge">SCALABILITY & INVESTMENT RETURN</div>
+          <div class="title" style="font-size:48px">Impact & Roadmap</div>
+          <div class="desc">A phased approach: pilot testing for local calibration, establishing a training framework, and large-scale deployment leveraging local artisans under the Atmanirbhar Bharat initiative.</div>
+          <div style="margin-top:30px;color:var(--accent-gold-light);font-weight:700;font-size:20px;letter-spacing:1px;font-family:'Playfair Display',serif;">TARGET DEPLOYMENT WHEN NEEDED</div>
+          <div style="margin-top:10px;color:var(--text-secondary);font-size:16px;">
+            Immediate Objectives: Prototype finalization, extensive community User Acceptance Testing (UAT), and securing seed funding for procurement and initial training workshops.
+          </div>
+        </div>
+        <div class="right">
+          <div class="card">
+            <img class="img-fit" src="https://developedindiamission.org/wp-content/themes/dim/app/images/logo-hi.png" alt="Viksit Bharat Abhiyan logo">
+          </div>
+        </div>
+      </section>
+
     </div>
-  </div>
+
+    <div class="controls">
+      <div class="left-controls">
+        <button class="btn" id="prevBtn" title="Previous (←)">◀ PREV REPORT</button>
+        <button class="btn primary" id="nextBtn" title="Next (→)">NEXT SECTION ▶</button>
+        <div class="kbd">Use Arrow Keys</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="color:var(--text-secondary);font-size:15px;">INFOGRAPHIC <span id="current" class="gold-text">1</span> / <span id="total">7</span></div>
+      </div>
+    </div>
+    
+  </div> <!-- END #scaling-root -->
 </div>
 
 <script>
+  const nominalWidth = 1400;
+  const nominalHeight = 800;
   const slides = Array.from(document.querySelectorAll('.slide'));
   const total = slides.length;
   let index = 0;
   const currentEl = document.getElementById('current');
   const totalEl = document.getElementById('total');
+  const deck = document.getElementById('deck');
+  const scalingRoot = document.getElementById('scaling-root');
+  
   totalEl.textContent = total;
 
+  // --- SCALING LOGIC ---
+  function applyScale() {
+    // 1. Get the actual rendered size of the responsive parent (.deck)
+    const deckRect = deck.getBoundingClientRect();
+    const actualWidth = deckRect.width;
+    const actualHeight = deckRect.height;
+    
+    // 2. Calculate the scale factor based on the smaller dimension ratio
+    const scaleFactor = Math.min(actualWidth / nominalWidth, actualHeight / nominalHeight);
+    
+    // 3. Apply the scale transformation to the root element
+    scalingRoot.style.transform = `scale(${scaleFactor})`;
+  }
+
+  // --- PRESENTATION LOGIC ---
   const dotsWrap = document.getElementById('dots');
   slides.forEach((s,i)=>{
     const d = document.createElement('div');
@@ -477,21 +480,15 @@
     if(e.key === 'End') go(total-1);
   });
 
-  // Add touch/swipe detection for navigation on mobile/smart boards
-  const slideArea = document.getElementById('slideArea');
+  // Add touch/swipe detection for navigation
   let touchStartX = 0;
-  let touchEndX = 0;
 
-  slideArea.addEventListener('touchstart', (e) => {
+  deck.addEventListener('touchstart', (e) => {
     touchStartX = e.changedTouches[0].screenX;
-  }, {passive:false});
+  }, {passive:true});
 
-  slideArea.addEventListener('touchend', (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleGesture();
-  }, {passive:false});
-
-  function handleGesture() {
+  deck.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
     const swipeThreshold = 50; 
     
     if (touchEndX < touchStartX - swipeThreshold) {
@@ -501,13 +498,15 @@
       // Swiped Right - Go Previous
       go(index - 1);
     }
-  }
-
-  // Prevent accidental overscroll when presenting on touch screens
-  document.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
+  }, {passive:true});
   
-  // Initial UI setup
-  updateUI();
+  // Initial UI setup and Scaling
+  window.onload = () => {
+    updateUI();
+    applyScale();
+  };
+  window.addEventListener('resize', applyScale);
 </script>
 </body>
   </html>
+
